@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>兰州理工大学 - 教务管理系统</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Segoe UI", "Microsoft YaHei", Roboto, sans-serif;
+        }
+
+        #loginPage {
+            width: 100vw;
+            height: 100vh;
+            background-image: url("https://images.pexels.com/photos/1252869/pexels-photo-1252869.jpeg?auto=compress&cs=tinysrgb&w=1600&h=900&dpr=2");
+            background-size: cover;
+            background-position: center 30%;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        /* 可选：增加半透明遮罩层，提升文字可读性（不强制，但保留登录框白色背景足够） */
+        #loginPage::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.25);
+            backdrop-filter: brightness(0.98);
+            z-index: 1;
+        }
+
+        .login-box {
+            width: 420px;
+            background: rgba(255, 255, 255, 0.96);
+            backdrop-filter: blur(2px);
+            padding: 48px 40px;
+            border-radius: 24px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            transition: all 0.2s;
+            position: relative;
+            z-index: 2;
+        }
+
+        .login-title {
+            text-align: center;
+            font-size: 26px;
+            color: #1e3a5f;
+            margin-bottom: 32px;
+            font-weight: 700;
+            letter-spacing: 1px;
+        }
+
+        .input-item {
+            margin-bottom: 24px;
+        }
+
+        .input-item label {
+            display: block;
+            font-size: 14px;
+            color: #2c3e4e;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        .input-item input {
+            width: 100%;
+            height: 48px;
+            padding: 0 16px;
+            border: 1px solid #ccd7e4;
+            border-radius: 12px;
+            font-size: 15px;
+            outline: none;
+            transition: 0.2s;
+        }
+
+        .input-item input:focus {
+            border-color: #1e6f3f;
+            box-shadow: 0 0 0 2px rgba(30, 111, 63, 0.2);
+        }
+
+        .login-btn {
+            width: 100%;
+            height: 48px;
+            background: #1e6f3f;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.2s;
+            margin-top: 8px;
+        }
+
+        .login-btn:hover {
+            background: #0f4e2d;
+        }
+
+        .to-register {
+            text-align: center;
+            margin-top: 24px;
+            font-size: 14px;
+            color: #4b5563;
+        }
+
+        .to-register span {
+            color: #1e6f3f;
+            cursor: pointer;
+            font-weight: 600;
+            margin-left: 6px;
+        }
+
+        /* 注册弹窗 */
+        #registerPage {
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.6);
+            position: fixed;
+            top: 0;
+            left: 0;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .register-box {
+            width: 440px;
+            background: white;
+            padding: 36px 32px;
+            border-radius: 28px;
+            box-shadow: 0 20px 35px rgba(0, 0, 0, 0.3);
+        }
+
+        /* 主页样式 */
+        #homePage {
+            background: #f1f5f9;
+            display: none;
+            min-height: 100vh;
+        }
+
+        .header {
+            background: #0b2b3b;
+            background-image: linear-gradient(98deg, #0a2a38 0%, #144d5c 100%);
+            color: white;
+            padding: 24px 32px;
+            text-align: center;
+            font-size: 24px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .container {
+            max-width: 1300px;
+            margin: 30px auto;
+            padding: 0 20px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 20px;
+            padding: 24px 28px;
+            margin-bottom: 28px;
+            box-shadow: 0 6px 14px rgba(0, 0, 0, 0.05);
+            transition: 0.2s;
+        }
+
+        .card h2 {
+            color: #1e4663;
+            font-size: 1.4rem;
+            margin-bottom: 18px;
+            border-left: 5px solid #1e6f3f;
+            padding-left: 16px;
+            font-weight: 600;
+        }
+
+        .info-row {
+            display: flex;
+            margin: 14px 0;
+            font-size: 16px;
+            flex-wrap: wrap;
+        }
+
+        .info-label {
+            width: 100px;
+            color: #5a6874;
+            font-weight: 500;
+        }
+
+        .info-value {
+            color: #1e2a36;
+            font-weight: 500;
+        }
+
+        /* 课程表样式 节次-星期布局 */
+        .timetable-wrapper {
+            overflow-x: auto;
+            border-radius: 20px;
+            margin-top: 12px;
+        }
+
+        .course-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+            min-width: 800px;
+            background: white;
+        }
+
+        .course-table th,
+        .course-table td {
+            border: 1px solid #e2e8f0;
+            padding: 12px 8px;
+            vertical-align: top;
+        }
+
+        .course-table th {
+            background: #f0f7f0;
+            color: #1f4f3a;
+            font-weight: 700;
+            font-size: 14px;
+            text-align: center;
+        }
+
+        .period-col {
+            background: #fafcf8;
+            font-weight: 600;
+            color: #1e5631;
+            text-align: center;
+            width: 90px;
+        }
+
+        .course-item {
+            background: #fefcf5;
+            border-left: 3px solid #2c7a4b;
+            padding: 8px 6px;
+            margin-bottom: 8px;
+            border-radius: 10px;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+        }
+
+        .course-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .course-name {
+            font-weight: 700;
+            font-size: 13px;
+            color: #1f3b4c;
+        }
+
+        .course-code {
+            font-size: 11px;
+            color: #6b7c8a;
+            font-family: monospace;
+            margin-top: 2px;
+        }
+
+        .course-meta {
+            font-size: 11px;
+            color: #b45309;
+            margin-top: 4px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .week-badge {
+            background: #e9f5eb;
+            padding: 2px 6px;
+            border-radius: 20px;
+            color: #2b6e3c;
+            font-weight: 500;
+        }
+
+        .room-badge {
+            background: #eef2ff;
+            padding: 2px 6px;
+            border-radius: 20px;
+            color: #1e40af;
+        }
+
+        .notice-box {
+            background: #fffbeb;
+            border-left: 5px solid #e6b12e;
+            padding: 12px 18px;
+            border-radius: 14px;
+            margin-top: 20px;
+        }
+
+        .notice-box p {
+            font-size: 14px;
+            margin: 6px 0;
+            color: #92400e;
+        }
+
+        .logout {
+            text-align: right;
+            margin-top: 20px;
+        }
+
+        .logout button {
+            padding: 8px 24px;
+            background: #cfdfe8;
+            color: #1e3a5f;
+            border: none;
+            border-radius: 40px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: 0.2s;
+        }
+
+        .logout button:hover {
+            background: #b9cad6;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 20px;
+            color: #7c8b9c;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+
+<!-- 登录界面 -->
+<div id="loginPage">
+    <div class="login-box">
+        <div class="login-title">🏫 兰州理工大学<br><span style="font-size: 14px;">统一身份认证</span></div>
+        <form onsubmit="login(event)">
+            <div class="input-item">
+                <label>📖 学号 / 工号</label>
+                <input type="text" id="studentId" value="230162401001" required>
+            </div>
+            <div class="input-item">
+                <label>🔒 密码</label>
+                <input type="password" id="password" value="123456" required>
+            </div>
+            <button type="submit" class="login-btn">登录教务系统</button>
+        </form>
+        <div class="to-register">
+            还没有账号？<span onclick="showRegister()">立即注册</span>
+        </div>
+    </div>
+</div>
+
+<!-- 注册弹窗 -->
+<div id="registerPage">
+    <div class="register-box">
+        <div class="login-title">📝 注册新账号</div>
+        <form onsubmit="register(event)">
+            <div class="input-item">
+                <label>姓名</label>
+                <input type="text" id="reg_name" placeholder="真实姓名" required>
+            </div>
+            <div class="input-item">
+                <label>学号</label>
+                <input type="text" id="reg_id" placeholder="学号" required>
+            </div>
+            <div class="input-item">
+                <label>密码</label>
+                <input type="password" id="reg_pwd" placeholder="6~20位" required>
+            </div>
+            <div class="input-item">
+                <label>确认密码</label>
+                <input type="password" id="reg_repwd" required>
+            </div>
+            <button type="submit" class="login-btn">注册并登录</button>
+        </form>
+        <div class="to-register">
+            <span onclick="hideRegister()">← 返回登录</span>
+        </div>
+    </div>
+</div>
+
+<!-- 主界面 课表系统 -->
+<div id="homePage">
+    <div class="header">
+        🍂 兰州理工大学 · 本科生教学服务系统
+    </div>
+    <div class="container">
+        <!-- 个人信息卡片 -->
+        <div class="card">
+            <h2>👤 个人信息</h2>
+            <div class="info-row">
+                <div class="info-label">学号：</div>
+                <div class="info-value" id="display_sid">230162401001</div>
+            </div>
+            <div class="info-row">
+                <div class="info-label">姓名：</div>
+                <div class="info-value" id="display_name">阿敏</div>
+            </div>
+            <div class="info-row">
+                <div class="info-label">学年学期：</div>
+                <div class="info-value">2025-2026学年 春季学期</div>
+            </div>
+            <div class="info-row">
+                <div class="info-label">学院：</div>
+                <div class="info-value">计算机与通信学院</div>
+            </div>
+        </div>
+
+        <!-- 课表主体：按节次 + 星期 -->
+        <div class="card">
+            <h2>📅 本学期课程表 (2025-2026春) </h2>
+            <div class="timetable-wrapper">
+                <table class="course-table">
+                    <thead>
+                    <tr>
+                        <th>节次 / 星期</th>
+                        <th>星期一</th>
+                        <th>星期二</th>
+                        <th>星期三</th>
+                        <th>星期四</th>
+                        <th>星期五</th>
+                        <th>星期六</th>
+                        <th>星期日</th>
+                    </tr>
+                    </thead>
+                    <tbody id="timetable-body">
+                    <!-- 动态生成5个节次行：第1-2节，第3-4节，第5-6节，第7-8节，第9-10节 -->
+                    </tbody>
+                </table>
+            </div>
+            <div class="notice-box">
+                <p>📌 上课时间未确定课程：<strong>工程经济学(青岛理工大学) [588008]</strong> ｜ 1-10周 ｜ 具体教室另行通知</p>
+                <p>📌 调课信息：暂无临时调课，请以任课教师通知为准。</p>
+                <p>⚠️ 注：<strong>计算机硬件综合训练II [050700251]</strong> 为集中实践课，仅在第18-19周进行（全天整周实训），日常理论课程按周次正常安排。</p>
+            </div>
+        </div>
+
+        <div class="logout">
+            <button onclick="logout()">🚪 退出登录</button>
+        </div>
+        <footer>兰州理工大学教务处 © 2026 ｜ 课表数据源自教务系统</footer>
+    </div>
+</div>
+
+<script>
+    // ---------- 课表数据 (严格依据文档 timeTableForStu12.doc) ----------
+    // 定义星期映射: 0周一 ~ 6周日
+    // 节次: "1-2", "3-4", "5-6", "7-8", "9-10"
+    const periods = [
+        { key: "1-2", label: "第1-2节 (8:00-9:35)" },
+        { key: "3-4", label: "第3-4节 (9:55-11:30)" },
+        { key: "5-6", label: "第5-6节 (14:00-15:35)" },
+        { key: "7-8", label: "第7-8节 (15:55-17:30)" },
+        { key: "9-10", label: "第9-10节 (19:00-20:35)" }
+    ];
+
+    // 课程数据结构: 每个单元格为数组
+    // 依据文档精准录入
+    const scheduleData = {
+        // 星期一
+        "1-2": {
+            mon: [
+                { name: "计算机硬件综合训练II", code: "050700251", weeks: "18-19周", room: "实训基地(整周全天)", detail: "18-19周 第1-8节整周进行" }
+            ],
+            tue: [
+                { name: "计算机硬件综合训练II", code: "050700251", weeks: "18-19周", room: "实训基地", detail: "18-19周 第1-4节整周进行" }
+            ],
+            wed: [
+                { name: "计算机硬件综合训练II", code: "050700251", weeks: "18-19周", room: "实训基地", detail: "18-19周整周" },
+                { name: "软件工程B", code: "250700241[03]", weeks: "1-12周", room: "敦雅楼C203", detail: "1-12周 周三1-2节" }
+            ],
+            thu: [
+                { name: "计算机硬件综合训练II", code: "050700251", weeks: "18-19周", room: "实训基地", detail: "18-19周整周" },
+                { name: "Java Web开发技术", code: "350700299[01]", weeks: "1-12周", room: "观成楼306", detail: "1-12周 周四1-2节" }
+            ],
+            fri: [
+                { name: "计算机硬件综合训练II", code: "050700251", weeks: "18-19周", room: "实训基地", detail: "18-19周整周" },
+                { name: "软件工程B", code: "250700241[03]", weeks: "1-12周", room: "敦雅楼C203", detail: "1-12周 周五1-2节" }
+            ],
+            sat: [],
+            sun: []
+        },
+        "3-4": {
+            mon: [
+                { name: "专业外语", code: "216217[01]", weeks: "1-8周", room: "敦雅楼C203", detail: "1-8周 周一3-4节" }
+            ],
+            tue: [
+                { name: "计算机硬件综合训练II", code: "050700251", weeks: "18-19周", room: "实训基地", detail: "18-19周 第1-4节整周进行 (3-4节同属实训)" }
+            ],
+            wed: [],
+            thu: [],
+            fri: [
+                { name: "专业外语", code: "216217[01]", weeks: "1-8周", room: "敦雅楼C203", detail: "1-8周 周五3-4节" }
+            ],
+            sat: [],
+            sun: []
+        },
+        "5-6": {
+            mon: [
+                { name: "嵌入式系统", code: "216504[03]", weeks: "1-10周", room: "敦雅楼C203", detail: "1-10周 周一5-6节" }
+            ],
+            tue: [],
+            wed: [
+                { name: "嵌入式系统", code: "216504[03]", weeks: "1-10周", room: "敦雅楼C203", detail: "1-10周 周三5-6节" }
+            ],
+            thu: [
+                { name: "形势与政策6", code: "118106[06]", weeks: "5-6周", room: "集贤楼308", detail: "仅5-6周 周四5-6节" }
+            ],
+            fri: [],
+            sat: [],
+            sun: []
+        },
+        "7-8": {
+            mon: [
+                { name: "计算机硬件综合训练II", code: "050700251", weeks: "18-19周", room: "实训基地", detail: "18-19周 第1-8节整周进行" }
+            ],
+            tue: [],
+            wed: [
+                { name: "计算机硬件综合训练II", code: "050700251", weeks: "18-19周", room: "实训基地", detail: "18-19周 整周进行" }
+            ],
+            thu: [
+                { name: "计算机硬件综合训练II", code: "050700251", weeks: "18-19周", room: "实训基地", detail: "18-19周 整周进行" }
+            ],
+            fri: [
+                { name: "计算机硬件综合训练II", code: "050700251", weeks: "18-19周", room: "实训基地", detail: "18-19周 整周进行" }
+            ],
+            sat: [],
+            sun: []
+        },
+        "9-10": {
+            mon: [],
+            tue: [
+                { name: "计算机视觉", code: "350700295[01]", weeks: "1-12周", room: "敦雅楼C203", detail: "1-12周 周二9-10节" }
+            ],
+            wed: [],
+            thu: [],
+            fri: [],
+            sat: [],
+            sun: []
+        }
+    };
+
+    // 辅助函数：生成某一天某一节次的课程html
+    function renderCourses(courses) {
+        if (!courses || courses.length === 0) return '<div style="color:#9aaebf; font-size:12px; text-align:center;">—— 无课程 ——</div>';
+        let html = '';
+        for (let c of courses) {
+            html += `
+                <div class="course-item">
+                    <div class="course-name">📘 ${c.name}</div>
+                    <div class="course-code">${c.code}</div>
+                    <div class="course-meta">
+                        <span class="week-badge">🗓️ ${c.weeks}</span>
+                        <span class="room-badge">🏫 ${c.room}</span>
+                    </div>
+                    <div style="font-size:10px; color:#6c757d; margin-top:4px;">${c.detail}</div>
+                </div>
+            `;
+        }
+        return html;
+    }
+
+    // 动态构建课表body
+    function buildTimetable() {
+        const tbody = document.getElementById('timetable-body');
+        if (!tbody) return;
+        tbody.innerHTML = '';
+        for (let period of periods) {
+            const row = document.createElement('tr');
+            // 节次列
+            const periodCell = document.createElement('td');
+            periodCell.className = 'period-col';
+            periodCell.innerText = period.label;
+            row.appendChild(periodCell);
+
+            const days = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'];
+            for (let day of days) {
+                const cell = document.createElement('td');
+                let courses = [];
+                if (scheduleData[period.key] && scheduleData[period.key][day]) {
+                    courses = scheduleData[period.key][day];
+                }
+                cell.innerHTML = renderCourses(courses);
+                row.appendChild(cell);
+            }
+            tbody.appendChild(row);
+        }
+    }
+
+    // ---------- 用户认证模块 (支持localStorage存储) ----------
+    let currentUser = null; // { id, name }
+
+    // 初始化演示账号：预置一个默认学生
+    function initDefaultUser() {
+        if (!localStorage.getItem('users')) {
+            const defaultUsers = {
+                "230162401001": { id: "230162401001", name: "阿敏", password: "123456" }
+            };
+            localStorage.setItem('users', JSON.stringify(defaultUsers));
+        }
+    }
+
+    // 注册逻辑
+    function register(e) {
+        e.preventDefault();
+        const name = document.getElementById("reg_name").value.trim();
+        const id = document.getElementById("reg_id").value.trim();
+        const pwd = document.getElementById("reg_pwd").value;
+        const repwd = document.getElementById("reg_repwd").value;
+
+        if (!name || !id || !pwd) {
+            alert("请完整填写信息");
+            return;
+        }
+        if (pwd !== repwd) {
+            alert("两次输入的密码不一致");
+            return;
+        }
+        if (pwd.length < 3) {
+            alert("密码长度至少3位");
+            return;
+        }
+        let users = JSON.parse(localStorage.getItem('users') || '{}');
+        if (users[id]) {
+            alert("学号已存在，请直接登录");
+            return;
+        }
+        users[id] = { id: id, name: name, password: pwd };
+        localStorage.setItem('users', JSON.stringify(users));
+        alert("注册成功！正在自动登录...");
+        // 自动登录
+        currentUser = { id: id, name: name };
+        document.getElementById("display_sid").innerText = id;
+        document.getElementById("display_name").innerText = name;
+        document.getElementById("loginPage").style.display = "none";
+        document.getElementById("homePage").style.display = "block";
+        hideRegister();
+    }
+
+    function login(e) {
+        e.preventDefault();
+        const id = document.getElementById("studentId").value.trim();
+        const pwd = document.getElementById("password").value;
+
+        const users = JSON.parse(localStorage.getItem('users') || '{}');
+        // 优先匹配存储用户，其次默认预置兜底
+        if (users[id] && users[id].password === pwd) {
+            currentUser = { id: id, name: users[id].name };
+            document.getElementById("display_sid").innerText = currentUser.id;
+            document.getElementById("display_name").innerText = currentUser.name;
+            document.getElementById("loginPage").style.display = "none";
+            document.getElementById("homePage").style.display = "block";
+            return;
+        }
+        // 兼容硬编码阿敏演示（若localStorage未覆盖）
+        if (id === "230162401001" && pwd === "123456") {
+            currentUser = { id: "230162401001", name: "阿敏" };
+            document.getElementById("display_sid").innerText = currentUser.id;
+            document.getElementById("display_name").innerText = currentUser.name;
+            document.getElementById("loginPage").style.display = "none";
+            document.getElementById("homePage").style.display = "block";
+            return;
+        }
+        alert("学号或密码错误！");
+    }
+
+    function logout() {
+        currentUser = null;
+        document.getElementById("homePage").style.display = "none";
+        document.getElementById("loginPage").style.display = "flex";
+        document.getElementById("studentId").value = "230162401001";
+        document.getElementById("password").value = "123456";
+    }
+
+    function showRegister() {
+        document.getElementById("registerPage").style.display = "flex";
+    }
+
+    function hideRegister() {
+        document.getElementById("registerPage").style.display = "none";
+    }
+
+    // 初始化系统 && 渲染课表
+    window.onload = () => {
+        initDefaultUser();
+        buildTimetable();   // 根据文档数据构建完整课表
+        if(!scheduleData["3-4"].tue.find(c=>c.code === "050700251")){
+            scheduleData["3-4"].tue.push({ name: "计算机硬件综合训练II", code: "050700251", weeks: "18-19周", room: "实训基地", detail: "18-19周 第1-4节整周" });
+        }
+        buildTimetable();
+    };
+</script>
+</body>
+</html>
